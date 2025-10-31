@@ -32,14 +32,12 @@ export class Scanner {
       allFindings.push(...findings);
     }
 
-    // Filter out findings that are inside code blocks (examples)
-    const filteredFindings = allFindings.filter(
-      finding => !isInCodeBlock(finding.line, skill.codeBlocks)
-    );
-
+    // For Claude skills, we want to scan code blocks since they contain
+    // the actual executable content (not just examples)
+    // Keep all findings - don't filter out code blocks
     return {
       skill,
-      findings: filteredFindings,
+      findings: allFindings,
     };
   }
 
