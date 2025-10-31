@@ -1,0 +1,26 @@
+{
+  "name": "@agentigy/skillcheck",
+  "version": "1.0.0",
+  "description": "Security scanner for Claude skill.md files",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "skillcheck": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test-parser": "tsx src/test-parser.ts",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": ["security", "claude", "skill", "scanner", "vulnerability", "github-actions"],
+  "author": "Agentigy",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  }
+}
