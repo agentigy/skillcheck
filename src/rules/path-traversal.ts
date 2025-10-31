@@ -10,7 +10,6 @@ const PATH_VALIDATION_KEYWORDS = [
   /sanitiz.*path/i,
   /allow[_-]?list/i,
   /whitelist/i,
-  /basename/i,  // Using basename can prevent traversal
   /realpath/i,
 ];
 
@@ -45,6 +44,12 @@ const PATH_TRAVERSAL_PATTERNS: PathPattern[] = [
     pattern: /\.\.[\/\\]/g,
     severity: 'HIGH',
     description: 'Path traversal sequence (../) detected',
+  },
+  {
+    name: 'File path construction with user input',
+    pattern: /(?:file_?path|path|filename)\s*=\s*f?["'][^"']*\{(?:user|input|request|param|filename)/gi,
+    severity: 'HIGH',
+    description: 'File path constructed with user input',
   },
   {
     name: 'Read tool with user input',
