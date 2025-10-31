@@ -2,6 +2,9 @@ name: Skill Security Check
 
 on:
   push:
+    branches:
+      - main
+      - master
     paths:
       - '.claude/**/*.md'
       - 'src/**'
