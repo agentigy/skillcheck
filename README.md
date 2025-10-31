@@ -2,8 +2,6 @@
 
 Security scanner for Claude SKILL.md files. Detects vulnerabilities before they reach production.
 
-Built by Agentigy — securing AI agents and workflows.
-
 ## Features
 
 - **Hardcoded Secrets Detection** - Finds API keys, tokens, passwords, and credentials
@@ -191,6 +189,8 @@ os.system(f"rm {shlex.quote(userInput)}")
 - [ ] Configuration file support
 - [ ] Custom rule definitions
 - [ ] VS Code extension
+
+Built by Agentigy — securing AI agents and workflows.
 
 ## License
 
