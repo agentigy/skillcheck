@@ -1,0 +1,203 @@
+name: Skill Security Check
+
+on:
+  push:
+    paths:
+      - '.claude/**/*.md'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    paths:
+      - '.claude/**/*.md'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+    inputs:
+      fail_on_severity:
+        description: 'Fail CI if issues at this severity or higher are found'
+        required: false
+        default: 'HIGH'
+        type: choice
+        options:
+          - CRITICAL
+          - HIGH
+          - MEDIUM
+          - LOW
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  security-scan:
+    name: Scan Claude Skills
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build scanner
+        run: npm run build
+
+      - name: Run security scan (Console output)
+        id: scan
+        continue-on-error: true
+        run: |
+          FAIL_ON="${{ github.event.inputs.fail_on_severity || 'HIGH' }}"
+          echo "Running skillcheck with fail-on: $FAIL_ON"
+          node dist/cli.js --fail-on "$FAIL_ON" --format console .claude 2>&1 | tee scan-output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          exit $EXIT_CODE
+
+      - name: Generate SARIF report
+        if: always()
+        run: |
+          node dist/cli.js --format sarif .claude > results.sarif
+          echo "SARIF report generated"
+
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+          category: skillcheck
+
+      - name: Parse scan results for PR comment
+        if: always() && github.event_name == 'pull_request'
+        id: parse_results
+        run: |
+          if [ -f scan-output.txt ]; then
+            FINDINGS=$(grep -c "Issues Found:" scan-output.txt || echo "0")
+            echo "findings_count=$FINDINGS" >> $GITHUB_OUTPUT
+
+            # Extract summary
+            if [ -f results.sarif ]; then
+              CRITICAL=$(jq '[.runs[0].results[] | select(.level == "error" and (.properties.security_severity | tonumber) >= 9)] | length' results.sarif)
+              HIGH=$(jq '[.runs[0].results[] | select(.level == "error" and (.properties.security_severity | tonumber) < 9 and (.properties.security_severity | tonumber) >= 7)] | length' results.sarif)
+              MEDIUM=$(jq '[.runs[0].results[] | select(.level == "warning")] | length' results.sarif)
+              LOW=$(jq '[.runs[0].results[] | select(.level == "note")] | length' results.sarif)
+
+              echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+              echo "high=$HIGH" >> $GITHUB_OUTPUT
+              echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+              echo "low=$LOW" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Create PR comment with findings
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const exitCode = '${{ steps.scan.outputs.exit_code }}';
+            const critical = '${{ steps.parse_results.outputs.critical }}' || '0';
+            const high = '${{ steps.parse_results.outputs.high }}' || '0';
+            const medium = '${{ steps.parse_results.outputs.medium }}' || '0';
+            const low = '${{ steps.parse_results.outputs.low }}' || '0';
+            const totalFindings = parseInt(critical) + parseInt(high) + parseInt(medium) + parseInt(low);
+
+            let status = '✅ **PASSED**';
+            let statusColor = '🟢';
+
+            if (exitCode !== '0') {
+              status = '❌ **FAILED**';
+              statusColor = '🔴';
+            } else if (totalFindings > 0) {
+              status = '⚠️ **PASSED WITH WARNINGS**';
+              statusColor = '🟡';
+            }
+
+            let comment = `## ${statusColor} Skill Security Check ${status}\n\n`;
+            comment += `### Summary\n\n`;
+            comment += `| Severity | Count |\n`;
+            comment += `|----------|-------|\n`;
+            comment += `| 🔴 Critical | ${critical} |\n`;
+            comment += `| 🟠 High | ${high} |\n`;
+            comment += `| 🟡 Medium | ${medium} |\n`;
+            comment += `| 🔵 Low | ${low} |\n`;
+            comment += `| **Total** | **${totalFindings}** |\n\n`;
+
+            if (totalFindings > 0) {
+              comment += `### Details\n\n`;
+              comment += `Security findings were detected in your Claude skill files. `;
+              comment += `Check the [Security tab](${context.payload.repository.html_url}/security/code-scanning) for detailed results.\n\n`;
+
+              // Add snippet of console output if available
+              if (fs.existsSync('scan-output.txt')) {
+                const scanOutput = fs.readFileSync('scan-output.txt', 'utf8');
+                const lines = scanOutput.split('\n').slice(0, 50); // First 50 lines
+                if (lines.length > 0) {
+                  comment += `<details>\n<summary>Scan Output (first 50 lines)</summary>\n\n\`\`\`\n`;
+                  comment += lines.join('\n');
+                  comment += `\n\`\`\`\n</details>\n\n`;
+                }
+              }
+            } else {
+              comment += `No security issues detected in Claude skill files. Great job! 🎉\n\n`;
+            }
+
+            comment += `---\n`;
+            comment += `*Scanned with [@agentigy/skillcheck](https://github.com/agentigy/skillcheck)*\n`;
+            comment += `*Threshold: Fail on **${{ github.event.inputs.fail_on_severity || 'HIGH' }}** or higher*`;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Skill Security Check')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+      - name: Fail workflow if issues found
+        if: steps.scan.outputs.exit_code != '0'
+        run: |
+          echo "Security issues found at or above the configured threshold"
+          echo "Check the scan output above for details"
+          exit 1
+
+      - name: Upload scan artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-results
+          path: |
+            results.sarif
+            scan-output.txt
+          retention-days: 30
