@@ -140,3 +140,4 @@ vite.config.ts.timestamp-*
 
 CLAUDE.md
 results.sarif
+.DS_Store
