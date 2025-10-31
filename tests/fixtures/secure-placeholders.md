@@ -10,7 +10,7 @@ Configure your API key using an environment variable:
 export API_KEY="your_api_key_here"
 ```
 
-## Instructions
+## Instructionss
 
 When connecting to the database, retrieve credentials from environment:
 
