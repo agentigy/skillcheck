@@ -1,4 +1,4 @@
-# SkillCheck
+# SkillCheck for Claude Skills
 
 Security scanner for Claude SKILL.md files. Detects vulnerabilities before they reach production.
 
