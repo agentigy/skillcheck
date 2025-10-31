@@ -1,0 +1,420 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "SkillCheck",
+          "informationUri": "https://github.com/agentigy/skillcheck",
+          "version": "1.0.0",
+          "rules": [
+            {
+              "id": "CMD_INJECTION_001",
+              "name": "CMD_INJECTION_001",
+              "shortDescription": {
+                "text": "Potential command injection: Shell command execution with variable interpolation"
+              },
+              "fullDescription": {
+                "text": "Validate and sanitize all user inputs. Use parameterized commands or allowlists. Avoid shell=True."
+              },
+              "help": {
+                "text": "Validate and sanitize all user inputs. Use parameterized commands or allowlists. Avoid shell=True.\n\nReference: CWE-78"
+              },
+              "properties": {
+                "tags": [
+                  "security"
+                ],
+                "security-severity": "9.0"
+              }
+            },
+            {
+              "id": "SECRET_EXPOSURE_001",
+              "name": "SECRET_EXPOSURE_001",
+              "shortDescription": {
+                "text": "Potential AWS Access Key detected"
+              },
+              "fullDescription": {
+                "text": "Remove hardcoded secrets and use environment variables or secure secret management"
+              },
+              "help": {
+                "text": "Remove hardcoded secrets and use environment variables or secure secret management\n\nReference: CWE-798"
+              },
+              "properties": {
+                "tags": [
+                  "security"
+                ],
+                "security-severity": "9.0"
+              }
+            },
+            {
+              "id": "PATH_TRAVERSAL_001",
+              "name": "PATH_TRAVERSAL_001",
+              "shortDescription": {
+                "text": "Potential path traversal: Path traversal sequence (../) detected"
+              },
+              "fullDescription": {
+                "text": "Validate file paths using path.resolve() or path.normalize(). Use allowlists for permitted directories."
+              },
+              "help": {
+                "text": "Validate file paths using path.resolve() or path.normalize(). Use allowlists for permitted directories.\n\nReference: CWE-22"
+              },
+              "properties": {
+                "tags": [
+                  "security"
+                ],
+                "security-severity": "7.0"
+              }
+            },
+            {
+              "id": "PRIV_ESCALATION_001",
+              "name": "PRIV_ESCALATION_001",
+              "shortDescription": {
+                "text": "Potential privilege escalation: Execution of commands with sudo (elevated privileges)"
+              },
+              "fullDescription": {
+                "text": "Avoid running commands with elevated privileges. If required, implement proper authorization checks and use principle of least privilege."
+              },
+              "help": {
+                "text": "Avoid running commands with elevated privileges. If required, implement proper authorization checks and use principle of least privilege.\n\nReference: CWE-250"
+              },
+              "properties": {
+                "tags": [
+                  "security"
+                ],
+                "security-severity": "9.0"
+              }
+            },
+            {
+              "id": "INFO_DISCLOSURE_001",
+              "name": "INFO_DISCLOSURE_001",
+              "shortDescription": {
+                "text": "Potential information disclosure: Exposing environment variables (may contain secrets)"
+              },
+              "fullDescription": {
+                "text": "Avoid exposing sensitive files, credentials, or system information. Implement proper access controls and redaction for sensitive data."
+              },
+              "help": {
+                "text": "Avoid exposing sensitive files, credentials, or system information. Implement proper access controls and redaction for sensitive data.\n\nReference: CWE-200"
+              },
+              "properties": {
+                "tags": [
+                  "security"
+                ],
+                "security-severity": "7.0"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CMD_INJECTION_001",
+          "level": "error",
+          "message": {
+            "text": "Potential command injection: Shell command execution with variable interpolation"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/secure-example.md"
+                },
+                "region": {
+                  "startLine": 9,
+                  "snippet": {
+                    "text": "```bash"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "SECRET_EXPOSURE_001",
+          "level": "error",
+          "message": {
+            "text": "Potential AWS Access Key detected"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 11,
+                  "snippet": {
+                    "text": "export AWS_ACCESS_KEY_ID=\"AKIAIOSFODNN7EXAMPLE\""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-798"
+          }
+        },
+        {
+          "ruleId": "SECRET_EXPOSURE_001",
+          "level": "error",
+          "message": {
+            "text": "Potential AWS Secret Key detected"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 12,
+                  "snippet": {
+                    "text": "export AWS_SECRET_ACCESS_KEY=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-798"
+          }
+        },
+        {
+          "ruleId": "CMD_INJECTION_001",
+          "level": "error",
+          "message": {
+            "text": "Potential command injection: Shell command execution with variable interpolation"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 9,
+                  "snippet": {
+                    "text": "```bash"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "PATH_TRAVERSAL_001",
+          "level": "error",
+          "message": {
+            "text": "Potential path traversal: Path traversal sequence (../) detected"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 40,
+                  "snippet": {
+                    "text": "cd ../../$USER_INPUT_PATH"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-22"
+          }
+        },
+        {
+          "ruleId": "PATH_TRAVERSAL_001",
+          "level": "error",
+          "message": {
+            "text": "Potential path traversal: Path traversal sequence (../) detected"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 40,
+                  "snippet": {
+                    "text": "cd ../../$USER_INPUT_PATH"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-22"
+          }
+        },
+        {
+          "ruleId": "PRIV_ESCALATION_001",
+          "level": "error",
+          "message": {
+            "text": "Potential privilege escalation: Execution of commands with sudo (elevated privileges)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 15,
+                  "snippet": {
+                    "text": "sudo apt-get update"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-250"
+          }
+        },
+        {
+          "ruleId": "PRIV_ESCALATION_001",
+          "level": "error",
+          "message": {
+            "text": "Potential privilege escalation: Execution of commands with sudo (elevated privileges)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 16,
+                  "snippet": {
+                    "text": "sudo apt-get install -y awscli"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-250"
+          }
+        },
+        {
+          "ruleId": "INFO_DISCLOSURE_001",
+          "level": "error",
+          "message": {
+            "text": "Potential information disclosure: Exposing environment variables (may contain secrets)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 11,
+                  "snippet": {
+                    "text": "export AWS_ACCESS_KEY_ID=\"AKIAIOSFODNN7EXAMPLE\""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-200"
+          }
+        },
+        {
+          "ruleId": "INFO_DISCLOSURE_001",
+          "level": "error",
+          "message": {
+            "text": "Potential information disclosure: Exposing environment variables (may contain secrets)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 12,
+                  "snippet": {
+                    "text": "export AWS_SECRET_ACCESS_KEY=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-200"
+          }
+        },
+        {
+          "ruleId": "INFO_DISCLOSURE_001",
+          "level": "error",
+          "message": {
+            "text": "Potential information disclosure: Reading system password files"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 28,
+                  "snippet": {
+                    "text": "cat /etc/passwd"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-200"
+          }
+        },
+        {
+          "ruleId": "INFO_DISCLOSURE_001",
+          "level": "error",
+          "message": {
+            "text": "Potential information disclosure: Accessing AWS credential files"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".claude/skills/test-aws-deploy.md"
+                },
+                "region": {
+                  "startLine": 31,
+                  "snippet": {
+                    "text": "cat ~/.aws/credentials"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-200"
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "endTimeUtc": "2025-10-31T22:52:42.640Z"
+        }
+      ]
+    }
+  ]
+}

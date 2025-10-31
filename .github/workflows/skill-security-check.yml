@@ -82,23 +82,26 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         id: parse_results
         run: |
+          # Parse severity counts from console output
+          CRITICAL=0
+          HIGH=0
+          MEDIUM=0
+          LOW=0
+
           if [ -f scan-output.txt ]; then
-            FINDINGS=$(grep -c "Issues Found:" scan-output.txt || echo "0")
-            echo "findings_count=$FINDINGS" >> $GITHUB_OUTPUT
-
-            # Extract summary
-            if [ -f results.sarif ]; then
-              CRITICAL=$(jq '[.runs[0].results[] | select(.level == "error" and (.properties.security_severity | tonumber) >= 9)] | length' results.sarif)
-              HIGH=$(jq '[.runs[0].results[] | select(.level == "error" and (.properties.security_severity | tonumber) < 9 and (.properties.security_severity | tonumber) >= 7)] | length' results.sarif)
-              MEDIUM=$(jq '[.runs[0].results[] | select(.level == "warning")] | length' results.sarif)
-              LOW=$(jq '[.runs[0].results[] | select(.level == "note")] | length' results.sarif)
-
-              echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
-              echo "high=$HIGH" >> $GITHUB_OUTPUT
-              echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
-              echo "low=$LOW" >> $GITHUB_OUTPUT
-            fi
+            # Extract counts from the "Findings by severity:" section using sed
+            CRITICAL=$(grep "CRITICAL:" scan-output.txt | sed -E 's/.*CRITICAL:[[:space:]]*([0-9]+).*/\1/' || echo "0")
+            HIGH=$(grep "HIGH:" scan-output.txt | sed -E 's/.*HIGH:[[:space:]]*([0-9]+).*/\1/' || echo "0")
+            MEDIUM=$(grep "MEDIUM:" scan-output.txt | sed -E 's/.*MEDIUM:[[:space:]]*([0-9]+).*/\1/' || echo "0")
+            LOW=$(grep "LOW:" scan-output.txt | sed -E 's/.*LOW:[[:space:]]*([0-9]+).*/\1/' || echo "0")
           fi
+
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+          echo "low=$LOW" >> $GITHUB_OUTPUT
+
+          echo "Parsed counts - Critical: $CRITICAL, High: $HIGH, Medium: $MEDIUM, Low: $LOW"
 
       - name: Create PR comment with findings
         if: always() && github.event_name == 'pull_request'
