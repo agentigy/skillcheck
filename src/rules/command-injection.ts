@@ -10,7 +10,6 @@ const VALIDATION_KEYWORDS = [
   /allow[_-]?list/i,
   /whitelist/i,
   /filter/i,
-  /check/i,
 ];
 
 /**
